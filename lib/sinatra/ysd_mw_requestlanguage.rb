@@ -43,7 +43,7 @@ module Middleware
   #
   #
   #
-  class RequestLanguage < Sinatra::Base
+  class RequestLanguageProcessor < Sinatra::Base
 
      helpers Sinatra::HttpAcceptLanguage
           
@@ -57,34 +57,47 @@ module Middleware
      #
      # Retrieves the language from the HTTP_ACCEPT_LANGUAGE or uses the default language configured for the Site
      #
-     before do
+     before :method => :get do
+
+       if request.path_info.start_with?('/change-language')
+         pass
+       end
+
+       #p "Language processor #{request.path_info} #{request.query_string}"
 
        request_language = request.path_info.scan(/\w+/).last
               
-       if (not request_language.nil?) && (settings.site_locales.include? request_language)
-         puts "language in the request : #{request_language}"
-         session[:locale] = request_language   
+       if (not request_language.nil?) and (settings.site_locales.include? request_language)
+         #puts "Language processor. Language in the request : #{request_language}. path= #{request.path_info}"
+         session[:locale] = request_language  
+         path_without_language = request.path_info[0, request.path_info.length-3]
+         #puts "Language process. Processing #{path_without_language}"
+         status, header, body = call! env.merge("PATH_INFO" => path_without_language) 
        else
+         #puts "Language processor. Language in session: #{session[:locale]}"
          unless session[:locale]
-           puts "does not exist locale : #{request.env['HTTP_ACCEPT_LANGUAGE'].nil?}"
            if request.env['HTTP_ACCEPT_LANGUAGE'].nil?
              session[:locale] = settings.default_locale
            else
              session[:locale] = (process_accepted_language_header(request.env['HTTP_ACCEPT_LANGUAGE']) & settings.site_locales).first || settings.default_locale
            end
          end
-       end
-       
-       session[:locale] = settings.default_locale if not settings.site_locales.include?(session[:locale])
-       
-       # Take the language away from the request
-       
-       env['PATH_INFO'] = env['PATH_INFO'].sub(settings.regexp_locales,'')
+         session[:locale] = settings.default_locale if not settings.site_locales.include?(session[:locale])
+         #puts "Language processor. There is any language in the request. Using #{session[:locale]}"
+         preffixes = Plugins::Plugin.plugin_invoke_all('ignore_path_prefix_language', {:app => self})
+         if (not request.path_info.start_with?(*preffixes)) and 
+            (not request.path_info.match("\\.")) # =~ /^[^.]*$/)
+           #puts "Language processor. Redirecting to #{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}"
+           redirect "#{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}" 
+         else
+           #puts "Language processor. Serving resource #{request.path_info}"
+         end
+
+       end      
   
      end
   
   
   end
-
 
 end
