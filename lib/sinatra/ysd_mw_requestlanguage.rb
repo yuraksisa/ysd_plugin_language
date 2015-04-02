@@ -13,7 +13,7 @@ module Sinatra
       # Extract the language from the request.path (before I used request.path_info)
       subpath_info = ''
       unless request.path.empty?
-        subpath_info = request.path.sub(Middleware::RequestLanguage.settings.regexp_locales,'') ||''
+        subpath_info = request.path.sub(Middleware::RequestLanguageProcessor.settings.regexp_locales,'') ||''
       end
       subpath_info << '/' if subpath_info.reverse.index('/') != 0  
       subpath_info.gsub!(/\/+/,'/')      
