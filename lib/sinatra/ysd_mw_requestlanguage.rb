@@ -88,7 +88,7 @@ module Middleware
          if (not request.path_info.start_with?(*preffixes)) and 
             (not request.path_info.match("\\.")) # =~ /^[^.]*$/)
            #puts "Language processor. Redirecting to #{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}"
-           redirect "#{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}" 
+           redirect "#{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}", 301 
          else
            #puts "Language processor. Serving resource #{request.path_info}"
          end
