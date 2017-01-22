@@ -14,6 +14,10 @@ module Sinatra
       languages_codes.uniq # Return an array without repeated elements
      
     end  
+
+    def format_url_with_language(the_url)
+      "/session[:locale]/#{the_url}"
+    end
     
   end
   
