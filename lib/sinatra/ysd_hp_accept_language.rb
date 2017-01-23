@@ -16,7 +16,11 @@ module Sinatra
     end  
 
     def format_url_with_language(the_url)
-      "/session[:locale]/#{the_url}"
+      if settings.multilanguage_site and session[:locale]
+        "/#{session[:locale]}#{the_url}"
+      else
+        the_url
+      end
     end
     
   end

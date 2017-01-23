@@ -59,7 +59,7 @@ module Middleware
      #
      before :method => :get do
 
-       p "BEFORE GET #{request.path}"
+       #p "BEFORE GET #{request.path}"
 
        if request.path_info.start_with?('/change-language')
          pass
@@ -70,22 +70,22 @@ module Middleware
        #request_language = request.path_info.scan(/\w+/).last
        request_language = request.path_info.scan(/\w+/).first
 
-       p "*** request.path_info:    #{request.path_info}"
-       p "request.query_string: #{request.query_string}"
-       p "first parameter:     #{request_language}"
+       #p "*** request.path_info:    #{request.path_info}"
+       #p "request.query_string: #{request.query_string}"
+       #p "first parameter:     #{request_language}"
 
         
        # Language in request       
        if (not request_language.nil?) and (settings.site_locales.include? request_language)
-         p "language in request: #{request_language} path: #{request.path_info}"
+         #p "language in request: #{request_language} path: #{request.path_info}"
          session[:locale] = request_language  
          #path_without_language = request.path_info[0, request.path_info.length-3]
          path_without_language = request.path_info.gsub "/#{session[:locale]}",''
-         p "language in request path without language: #{path_without_language}"
+         #p "language in request path without language: #{path_without_language}"
          status, header, body = call! env.merge("PATH_INFO" => path_without_language) 
        # Not language in request
        else
-         p "not language in request. path: #{request.path_info} session[:locale] : #{session[:locale]} HTTP ACCEPT LANGUAGE : #{request.env['HTTP_ACCEPT_LANGUAGE']}"
+         #p "not language in request. path: #{request.path_info} session[:locale] : #{session[:locale]} HTTP ACCEPT LANGUAGE : #{request.env['HTTP_ACCEPT_LANGUAGE']}"
          #puts "Language processor. Language in session: #{session[:locale]}"
          unless session[:locale]
            if request.env['HTTP_ACCEPT_LANGUAGE'].nil?
@@ -95,7 +95,7 @@ module Middleware
            end
          end
          session[:locale] = settings.default_locale if not settings.site_locales.include?(session[:locale])
-         p "not language in request. final session[:locale] = #{session[:locale]}"
+         #p "not language in request. final session[:locale] = #{session[:locale]}"
 
          preffixes = Plugins::Plugin.plugin_invoke_all('ignore_path_prefix_language', {:app => self})
 
@@ -104,12 +104,10 @@ module Middleware
            redirection_path = "/#{session[:locale]}"
            redirection_path << request.path_info
            redirection_path << request.query_string unless request.query_string.empty?
-           p "Serving redirected resource (locale) redirection_path : #{redirection_path}"
+           #p "Serving redirected resource (locale) redirection_path : #{redirection_path}"
            redirect redirection_path, 301
-           #puts "Language processor. Redirecting to #{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}"
-           #redirect "#{request.path_info}#{request.path_info.end_with?('/') ? '' : '/'}#{session[:locale]}#{(request.query_string.empty?) ? '' : '?'+request.query_string}", 301 
          else
-           puts "Serving resource not locale #{request.path_info}"
+           #puts "Serving resource not locale #{request.path_info}"
          end
 
        end      
