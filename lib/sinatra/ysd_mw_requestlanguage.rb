@@ -103,7 +103,7 @@ module Middleware
             (not request.path_info.match("\\.")) # =~ /^[^.]*$/)
            redirection_path = "/#{session[:locale]}"
            redirection_path << request.path_info
-           redirection_path << request.query_string unless request.query_string.empty?
+           redirection_path << "?#{request.query_string}" unless request.query_string.empty?
            #p "Serving redirected resource (locale) redirection_path : #{redirection_path}"
            redirect redirection_path, 301
          else
