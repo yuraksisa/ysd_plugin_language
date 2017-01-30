@@ -22,7 +22,7 @@ module Sinatra
 
        if url 
          if url.start_with?(*suffixes)
-           redirection_path = "/#{language}"
+           redirection_path = "/#{language}/"
            redirection_path << url[4,url.length]
            p "REDIRECT #{redirection_path}"
            redirect redirection_path, 301
