@@ -1,40 +1,54 @@
 module Sinatra
 
+  #
+  # Add route to an sinatra application to change the language for an URL
+  #
   module LanguageExtract
 
     def self.registered(app)
 
-     # Configuration     
-     app.set :regexp_locales, /\/(ca|en|es|fr)$/   # It defines the regular expression that matches the site languages    
-     app.set :site_locales, ["ca","en","es","fr"]    # It defines an array with the site languages
-     app.set :default_locale, "es"              # It defines the site default language    
+     # LANGUAGE Setup Configuration
+     app.set :multilanguage_site, false                       # Multilanguage site
+     app.set :default_locale, "es"                            # Default site language  
+     app.set :site_locales, ["ca","en","es","fr","it","de"]   # Site languages
+     app.set :regexp_prefix, /^\/(ca|en|fr|it|de)\/?/          # RegExp language prefix
 
      app.post '/change-language/?' do
        
-       language = params[:language]
-       url = params[:url]
+       if settings.multilanguage_site
 
-       p "Change language #{params[:url]}"
+         language = params[:language] # The selected language
+         url = params[:url]           # The current URL
+         url_language = url.scan(/\w+/).first 
 
-       session[:locale] = language
+         #p "Change Language. language: #{language} url: #{url} url_language: #{url_language}"
 
-       suffixes = %w(/es/ /en/ /ca/ /fr/)
-
-       if url 
-         if url.start_with?(*suffixes)
-           redirection_path = "/#{language}/"
-           redirection_path << url[4,url.length]
-           p "REDIRECT #{redirection_path}"
-           redirect redirection_path, 301
-         else
-           if url == '/'
-             p "REDIRECT /#{language}"
-             redirect "/#{language}", 301
-           end
+         # Build the url without the language
+         url_without_language = url 
+         # The URL contains language
+         if !url_language.nil? and !url_language.empty? and 
+            url_language != settings.default_locale and 
+            settings.site_locales.include?(url_language)
+            #p "Change Language. URL contains language #{url}"
+            url_without_language = url.gsub(/^\/#{url_language}/,'')
          end
-       else
-         p "REDICT #{url} ***** /#{language}"
-         redirect "/#{language}"
+
+         # Build the redirection path
+         redirection_path = if language == settings.default_locale 
+                              url_without_language
+                            else
+                              if url_without_language != '/'
+                                "/#{language}#{url_without_language}"
+                              else
+                                "/#{language}"
+                              end
+                            end
+
+         #p "Change Language. Redirection path: #{redirection_path} URL without language: #{url_without_language}"
+         redirect redirection_path, 301
+
+       else  
+         status 404 # It does not make change for a non multilanguage site
        end
 
      end
