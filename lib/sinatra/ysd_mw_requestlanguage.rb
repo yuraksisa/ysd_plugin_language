@@ -78,7 +78,7 @@ module Middleware
 
        # 1. Extract the language from the request (first element in the request.path_info)
        request_language = request.path_info.scan(/\w+/).first
-        
+       
        # 2.a If the language is included in the request (and it's not the default language)
        #
        # => Process the URL without language preffix
@@ -91,7 +91,7 @@ module Middleware
          
          session[:request_locale] = request_language  
          path_without_language = request.path_info.gsub(/^\/#{request_language}/,'')
-
+ 
          status, header, body = call! env.merge("PATH_INFO" => path_without_language) 
        
        else 
