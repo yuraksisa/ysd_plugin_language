@@ -6,6 +6,7 @@ Plugins::SinatraAppPlugin.register :request_language do
    author=      'yurak sisa'
    description= 'HTTP request language management'
    version=     '0.1'
+   hooker       Huasi::PluginLanguageExtension
    sinatra_helper Sinatra::HttpAcceptLanguage   
   
 end
