@@ -15,12 +15,37 @@ module Sinatra
      
     end  
 
+    #
+    # Format an url with the current language
+    #
     def format_url_with_language(the_url)
-      if settings.multilanguage_site and session[:locale] != settings.default_locale
-        "/#{session[:locale]}#{the_url}"
+
+      if translation_locale = locale_to_translate_into
+        "/#{translation_locale}#{the_url}"
       else
         the_url
       end
+    end
+
+    #
+    # Get the locate to which the information should be translated into or nil if it is not necessary
+    #
+    def locale_to_translate_into
+      multilanguage_site = settings.multilanguage_site
+      default_language = settings.default_language
+      if multilanguage_site and session[:locale] != default_language
+        session[:locale]
+      else
+        nil
+      end
+    end
+
+    #
+    # Setup the session[:locale]
+    #
+    def setup_session_locale_from_params
+      default_language = settings.default_language
+      session[:locale] = params[:lang] if params[:lang] and params[:lang] != default_language
     end
     
   end
