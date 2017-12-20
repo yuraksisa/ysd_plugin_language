@@ -78,7 +78,12 @@ module Middleware
 
        # 1. Extract the language from the request (first element in the request.path_info)
        request_language = request.path_info.scan(/\w+/).first
-       
+       request_language_params = params[:lang] if params[:lang] and
+                                                  request_language != settings.default_locale and !(settings.site_locales.include?(request_language)) and
+                                                  settings.site_locales.include?(params[:lang]) and params[:lang] != settings.default_locale
+
+       #p "request_language_params: #{request_language_params} path: #{request.path_info} -- #{params[:lang]}"
+
        # 2.a If the language is included in the request (and it's not the default language)
        #
        # => Process the URL without language preffix
@@ -87,20 +92,22 @@ module Middleware
        #      
        if !request_language.nil? and !request_language.empty? and
           request_language != settings.default_locale and 
-          settings.site_locales.include?(request_language) 
+          settings.site_locales.include?(request_language)
          
          session[:request_locale] = request_language  
          path_without_language = request.path_info.gsub(/^\/#{request_language}/,'')
- 
          status, header, body = call! env.merge("PATH_INFO" => path_without_language) 
-       
-       else 
+
+       elsif !request_language_params.nil?
+         session[:locale] = session[:request_locale] = request_language_params
+         Thread.current[:model_locale] = session[:locale]
+       else
          # 2.b If the language is not included in the request 
          #
          # => Set up the session[:locale] -> session[:request_locale] || settings.default_locale
          #
          session[:locale] = session[:request_locale] || settings.default_locale
-
+         Thread.current[:model_locale] = session[:locale]
        end      
   
      end
